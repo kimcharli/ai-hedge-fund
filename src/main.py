@@ -26,6 +26,7 @@ from dateutil.relativedelta import relativedelta
 from tabulate import tabulate
 from utils.visualize import save_graph_as_png
 import json
+import os
 
 # Load environment variables from .env file
 load_dotenv()
@@ -112,6 +113,7 @@ def create_workflow(selected_analysts=None):
     workflow = StateGraph(AgentState)
     workflow.add_node("start_node", start)
 
+    # breakpoint()
     # Get analyst nodes from the configuration
     analyst_nodes = get_analyst_nodes()
 
@@ -154,7 +156,7 @@ if __name__ == "__main__":
         default=0.0,
         help="Initial margin requirement. Defaults to 0.0"
     )
-    parser.add_argument("--tickers", type=str, required=True, help="Comma-separated list of stock ticker symbols")
+    # parser.add_argument("--tickers", type=str, required=True, help="Comma-separated list of stock ticker symbols")
     parser.add_argument(
         "--start-date",
         type=str,
@@ -169,44 +171,50 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Parse tickers from comma-separated string
-    tickers = [ticker.strip() for ticker in args.tickers.split(",")]
+    # tickers = [ticker.strip() for ticker in args.tickers.split(",")]
+    tickers = [ticker.strip() for ticker in os.environ.get("TICKERS").split(",")]
+    # breakpoint()
 
     # Select analysts
     selected_analysts = None
-    choices = questionary.checkbox(
-        "Select your AI analysts.",
-        choices=[questionary.Choice(display, value=value) for display, value in ANALYST_ORDER],
-        instruction="\n\nInstructions: \n1. Press Space to select/unselect analysts.\n2. Press 'a' to select/unselect all.\n3. Press Enter when done to run the hedge fund.\n",
-        validate=lambda x: len(x) > 0 or "You must select at least one analyst.",
-        style=questionary.Style(
-            [
-                ("checkbox-selected", "fg:green"),
-                ("selected", "fg:green noinherit"),
-                ("highlighted", "noinherit"),
-                ("pointer", "noinherit"),
-            ]
-        ),
-    ).ask()
+    # choices = questionary.checkbox(
+    #     "Select your AI analysts.",
+    #     choices=[questionary.Choice(display, value=value) for display, value in ANALYST_ORDER],
+    #     instruction="\n\nInstructions: \n1. Press Space to select/unselect analysts.\n2. Press 'a' to select/unselect all.\n3. Press Enter when done to run the hedge fund.\n",
+    #     validate=lambda x: len(x) > 0 or "You must select at least one analyst.",
+    #     style=questionary.Style(
+    #         [
+    #             ("checkbox-selected", "fg:green"),
+    #             ("selected", "fg:green noinherit"),
+    #             ("highlighted", "noinherit"),
+    #             ("pointer", "noinherit"),
+    #         ]
+    #     ),
+    # ).ask()
 
-    if not choices:
-        print("\n\nInterrupt received. Exiting...")
-        sys.exit(0)
-    else:
-        selected_analysts = choices
-        print(f"\nSelected analysts: {', '.join(Fore.GREEN + choice.title().replace('_', ' ') + Style.RESET_ALL for choice in choices)}\n")
+    # if not choices:
+    #     print("\n\nInterrupt received. Exiting...")
+    #     sys.exit(0)
+    # else:
+    #     selected_analysts = choices
+    #     print(f"\nSelected analysts: {', '.join(Fore.GREEN + choice.title().replace('_', ' ') + Style.RESET_ALL for choice in choices)}\n")
+    choises = os.environ.get("ANALYSTS").split(",")
+    # breakpoint()
 
     # Select LLM model
-    model_choice = questionary.select(
-        "Select your LLM model:",
-        choices=[questionary.Choice(display, value=value) for display, value, _ in LLM_ORDER],
-        style=questionary.Style([
-            ("selected", "fg:green bold"),
-            ("pointer", "fg:green bold"),
-            ("highlighted", "fg:green"),
-            ("answer", "fg:green bold"),
-        ])
-    ).ask()
+    # model_choice = questionary.select(
+    #     "Select your LLM model:",
+    #     choices=[questionary.Choice(display, value=value) for display, value, _ in LLM_ORDER],
+    #     style=questionary.Style([
+    #         ("selected", "fg:green bold"),
+    #         ("pointer", "fg:green bold"),
+    #         ("highlighted", "fg:green"),
+    #         ("answer", "fg:green bold"),
+    #     ])
+    # ).ask()
 
+    # breakpoint()
+    model_choice = os.environ.get("MODEL_CHOICE")
     if not model_choice:
         print("\n\nInterrupt received. Exiting...")
         sys.exit(0)

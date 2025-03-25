@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import requests
+import time
 
 from data.cache import get_cache
 from data.models import (
@@ -111,9 +112,17 @@ def search_line_items(
         "period": period,
         "limit": limit,
     }
-    response = requests.post(url, headers=headers, json=body)
-    if response.status_code != 200:
-        raise Exception(f"Error fetching data: {ticker} - {response.status_code} - {response.text}")
+    while True:
+        response = requests.post(url, headers=headers, json=body)
+        if response.status_code == 200:
+            break
+        if response.status_code == 429:
+            # If we get rate limited, wait and try again
+            print(f"{response.text=}")            
+            time.sleep(5)
+            continue
+        if response.status_code != 200:
+            raise Exception(f"Error fetching data: {ticker} - {response.status_code} - {response.text}")
     data = response.json()
     response_model = LineItemResponse(**data)
     search_results = response_model.search_results
